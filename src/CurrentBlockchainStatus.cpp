@@ -762,7 +762,7 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
     unique_ptr<TxSearch> ut0=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t0 {&TxSearch::search, ut0};
-    ut1->set_searched_blk_no(0);
+    ut0->set_searched_blk_no(0);
 
     unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t1 {&TxSearch::search, ut1};
@@ -770,7 +770,7 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     
     unique_ptr<TxSearch> ut2=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t2 {&TxSearch::search, ut2};
-    ut1->set_searched_blk_no(2);
+    ut2->set_searched_blk_no(2);
 
     unique_ptr<TxSearch> ut3=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t3 {&TxSearch::search, ut3};
@@ -785,12 +785,13 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     ut5->set_searched_blk_no(5);
 
     unique_ptr<TxSearch> ut6=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t6 {&TxSearch::search, ut1};
+    std::thread t6 {&TxSearch::search, ut6};
     ut6->set_searched_blk_no(6);
 
     unique_ptr<TxSearch> ut7=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t7 {&TxSearch::search, ut7};
     ut7->set_searched_blk_no(7);
+    
     unique_ptr<TxSearch> ut8=unique_ptr<TxSearch>(new TxSearch(acc,10));
     std::thread t8 {&TxSearch::search, ut8};
     ut8->set_searched_blk_no(8);
