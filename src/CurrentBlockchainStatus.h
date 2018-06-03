@@ -179,7 +179,8 @@ struct CurrentBlockchainStatus
     // due to forward declaraions of TxSearch
     static bool
     start_tx_search_thread(XmrAccount acc);
-
+    static bool
+    start_tx_search_multity_thread(XmrAccount acc);
     static bool
     ping_search_thread(const string& address);
 
