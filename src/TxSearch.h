@@ -49,6 +49,8 @@ class TxSearch
     // represents a row in mysql's Accounts table
     shared_ptr<XmrAccount> acc;
 
+    int step;
+
     // stores known output public keys.
     // used as a cash to fast look up of
     // our public keys in key images. Saves a lot of
@@ -69,7 +71,7 @@ class TxSearch
 
 public:
 
-    TxSearch(XmrAccount& _acc);
+    TxSearch(XmrAccount& _acc,int _step);
 
     void
     search();

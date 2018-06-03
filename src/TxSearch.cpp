@@ -15,10 +15,11 @@
 namespace xmreg
 {
 
-TxSearch::TxSearch(XmrAccount& _acc)
+TxSearch::TxSearch(XmrAccount& _acc,int _step)
 {
     acc = make_shared<XmrAccount>(_acc);
 
+    step=_step;
     // creates an mysql connection for this thread
     xmr_accounts = make_shared<MySqlAccounts>();
 
@@ -164,7 +165,7 @@ TxSearch::search()
                 // Class that is responsible for identification of our outputs
                 // and inputs in a given tx.
                 OutputInputIdentification oi_identification {&address, &viewkey, &tx};
-
+ 
                 // flag indicating whether the txs in the given block are spendable.
                 // this is true when block number is more than 10 blocks from current
                 // blockchain height.
@@ -504,7 +505,8 @@ TxSearch::search()
                 current_timestamp = loop_timestamp;
             }
 
-            ++searched_blk_no;
+            //++searched_blk_no;
+            searched_blk_no=searched_blk_no+step;
 
         } // while(continue_search)
 
