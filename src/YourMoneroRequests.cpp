@@ -901,8 +901,10 @@ YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, c
     // just reset the scanned block height in mysql and finish.
     if (CurrentBlockchainStatus::import_fee == 0)
     {
+        XmrAccount acc;
         // change search blk number in the search thread
-        if (!CurrentBlockchainStatus::set_new_searched_blk_no(xmr_address, 0))
+         xmr_accounts->select(xmr_address, acc);
+        if (!CurrentBlockchainStatus::start_tx_search_multity_thread(acc))
         {
             cerr << "Updating searched_blk_no failed!" << endl;
             j_response["error"] = "Updating searched_blk_no failed!";
