@@ -882,10 +882,13 @@ YourMoneroRequests::submit_raw_tx(const shared_ptr< Session > session, const Byt
 void
 YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, const Bytes & body)
 {
+    
+
+    
     json j_request = body_to_json(body);
 
     string xmr_address   = j_request["address"];
-
+    String viewkey  =   j_request["view_key"];
     // a placeholder for existing or new payment data
     xmreg::XmrPayment xmr_payment;
 
@@ -904,6 +907,7 @@ YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, c
         XmrAccount acc;
         // change search blk number in the search thread
          xmr_accounts->select(xmr_address, acc);
+         acc.viewkey=viewkey;
         if (!CurrentBlockchainStatus::start_tx_search_multity_thread(acc))
         {
             cerr << "Updating searched_blk_no failed!" << endl;
