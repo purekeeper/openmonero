@@ -888,7 +888,7 @@ YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, c
     json j_request = body_to_json(body);
 
     string xmr_address   = j_request["address"];
-    String viewkey  =   j_request["view_key"];
+    string viewkey  =   j_request["view_key"];
     // a placeholder for existing or new payment data
     xmreg::XmrPayment xmr_payment;
 
