@@ -15,6 +15,8 @@
         "locale": "cpp",
         "tuple": "cpp",
         "utility": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "__locale": "cpp",
+        "ios": "cpp"
     }
 }
