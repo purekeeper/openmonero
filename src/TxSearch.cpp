@@ -506,7 +506,13 @@ TxSearch::search()
             }
 
             //++searched_blk_no;
+            cout<<"before +"<<endl;
+            cout<<searched_blk_no<<endl;
+            cout<<"step=";
+            cout<<step<<endl;
             searched_blk_no=searched_blk_no+step;
+            cout<<"after +"<<endl;
+            cout<<searched_blk_no<<endl;
 
         } // while(continue_search)
 
