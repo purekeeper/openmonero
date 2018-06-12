@@ -4,13 +4,11 @@
 
 #include "CurrentBlockchainStatus.h"
 
-
 #include "tools.h"
 #include "mylmdb.h"
 #include "rpccalls.h"
 #include "MySqlAccounts.h"
 #include "TxSearch.h"
-
 
 #undef MONERO_DEFAULT_LOG_CATEGORY
 #define MONERO_DEFAULT_LOG_CATEGORY "openmonero"
@@ -18,31 +16,28 @@
 namespace xmreg
 {
 
-
-
 // initialize static variables
-atomic<uint64_t>        CurrentBlockchainStatus::current_height{0};
-string                  CurrentBlockchainStatus::blockchain_path{"/home/mwo/.blockchain/lmdb"};
-string                  CurrentBlockchainStatus::deamon_url{"http:://127.0.0.1:18081"};
-network_type            CurrentBlockchainStatus::net_type {network_type::MAINNET};
-bool                    CurrentBlockchainStatus::do_not_relay{false};
-bool                    CurrentBlockchainStatus::is_running{false};
-std::thread             CurrentBlockchainStatus::m_thread;
-uint64_t                CurrentBlockchainStatus::refresh_block_status_every_seconds{20};
-uint64_t                CurrentBlockchainStatus::max_number_of_blocks_to_import{8000};
-uint64_t                CurrentBlockchainStatus::search_thread_life_in_seconds {600}; // 10 minutes
+atomic<uint64_t> CurrentBlockchainStatus::current_height{0};
+string CurrentBlockchainStatus::blockchain_path{"/home/mwo/.blockchain/lmdb"};
+string CurrentBlockchainStatus::deamon_url{"http:://127.0.0.1:18081"};
+network_type CurrentBlockchainStatus::net_type{network_type::MAINNET};
+bool CurrentBlockchainStatus::do_not_relay{false};
+bool CurrentBlockchainStatus::is_running{false};
+std::thread CurrentBlockchainStatus::m_thread;
+uint64_t CurrentBlockchainStatus::refresh_block_status_every_seconds{20};
+uint64_t CurrentBlockchainStatus::max_number_of_blocks_to_import{8000};
+uint64_t CurrentBlockchainStatus::search_thread_life_in_seconds{600}; // 10 minutes
 vector<pair<uint64_t, transaction>> CurrentBlockchainStatus::mempool_txs;
-string                  CurrentBlockchainStatus::import_payment_address_str;
-string                  CurrentBlockchainStatus::import_payment_viewkey_str;
-uint64_t                CurrentBlockchainStatus::import_fee {10000000000}; // 0.01 xmr
-address_parse_info      CurrentBlockchainStatus::import_payment_address;
-secret_key              CurrentBlockchainStatus::import_payment_viewkey;
+string CurrentBlockchainStatus::import_payment_address_str;
+string CurrentBlockchainStatus::import_payment_viewkey_str;
+uint64_t CurrentBlockchainStatus::import_fee{10000000000}; // 0.01 xmr
+address_parse_info CurrentBlockchainStatus::import_payment_address;
+secret_key CurrentBlockchainStatus::import_payment_viewkey;
 map<string, unique_ptr<TxSearch>> CurrentBlockchainStatus::searching_threads;
-cryptonote::Blockchain* CurrentBlockchainStatus::core_storage;
-unique_ptr<xmreg::MicroCore>        CurrentBlockchainStatus::mcore;
+cryptonote::Blockchain *CurrentBlockchainStatus::core_storage;
+unique_ptr<xmreg::MicroCore> CurrentBlockchainStatus::mcore;
 
-void
-CurrentBlockchainStatus::start_monitor_blockchain_thread()
+void CurrentBlockchainStatus::start_monitor_blockchain_thread()
 {
     network_type net_type = CurrentBlockchainStatus::net_type;
 
@@ -74,26 +69,24 @@ CurrentBlockchainStatus::start_monitor_blockchain_thread()
 
     if (!is_running)
     {
-        m_thread = std::thread{[]()
-           {
-               while (true)
-               {
-                   update_current_blockchain_height();
-                   read_mempool();
-                   cout << "Check block height: " << current_height
-                        << " no of mempool txs: " << mempool_txs.size();
-                   cout << endl;
-                   clean_search_thread_map();
-                   std::this_thread::sleep_for(
-                           std::chrono::seconds(
-                                   refresh_block_status_every_seconds));
-               }
-           }};
+        m_thread = std::thread{[]() {
+            while (true)
+            {
+                update_current_blockchain_height();
+                read_mempool();
+                cout << "Check block height: " << current_height
+                     << " no of mempool txs: " << mempool_txs.size();
+                cout << endl;
+                clean_search_thread_map();
+                std::this_thread::sleep_for(
+                    std::chrono::seconds(
+                        refresh_block_status_every_seconds));
+            }
+        }};
 
         is_running = true;
     }
 }
-
 
 uint64_t
 CurrentBlockchainStatus::get_current_blockchain_height()
@@ -105,23 +98,19 @@ CurrentBlockchainStatus::get_current_blockchain_height()
     {
         return xmreg::MyLMDB::get_blockchain_height(blockchain_path) - 1;
     }
-    catch(std::exception& e)
+    catch (std::exception &e)
     {
         cerr << "xmreg::MyLMDB::get_blockchain_height: " << e.what() << endl;
         return previous_height;
     }
-
 }
 
-
-void
-CurrentBlockchainStatus::update_current_blockchain_height()
+void CurrentBlockchainStatus::update_current_blockchain_height()
 {
     current_height = get_current_blockchain_height();
 }
 
-bool
-CurrentBlockchainStatus::init_monero_blockchain()
+bool CurrentBlockchainStatus::init_monero_blockchain()
 {
     // set  monero log output level
     uint32_t log_level = 0;
@@ -140,31 +129,27 @@ CurrentBlockchainStatus::init_monero_blockchain()
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::is_tx_unlocked(
-        uint64_t unlock_time,
-        uint64_t block_height)
+bool CurrentBlockchainStatus::is_tx_unlocked(
+    uint64_t unlock_time,
+    uint64_t block_height)
 {
-    if(!is_tx_spendtime_unlocked(unlock_time, block_height))
+    if (!is_tx_spendtime_unlocked(unlock_time, block_height))
         return false;
 
-    if(block_height + CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE > current_height + 1)
+    if (block_height + CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE > current_height + 1)
         return false;
 
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::is_tx_spendtime_unlocked(
-        uint64_t unlock_time,
-        uint64_t block_height)
+bool CurrentBlockchainStatus::is_tx_spendtime_unlocked(
+    uint64_t unlock_time,
+    uint64_t block_height)
 {
-    if(unlock_time < CRYPTONOTE_MAX_BLOCK_NUMBER)
+    if (unlock_time < CRYPTONOTE_MAX_BLOCK_NUMBER)
     {
         //interpret as block index
-        if(current_height + CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS >= unlock_time)
+        if (current_height + CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS >= unlock_time)
             return true;
         else
             return false;
@@ -176,13 +161,13 @@ CurrentBlockchainStatus::is_tx_spendtime_unlocked(
         // XXX: this needs to be fast, so we'd need to get the starting heights
         // from the daemon to be correct once voting kicks in
 
-        uint64_t v2height = net_type == TESTNET ? 624634 : net_type == STAGENET ? (uint64_t)-1/*TODO*/ : 1009827;
+        uint64_t v2height = net_type == TESTNET ? 624634 : net_type == STAGENET ? (uint64_t)-1 /*TODO*/ : 1009827;
 
         uint64_t leeway = block_height < v2height
-                          ? CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1
-                          : CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2;
+                              ? CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1
+                              : CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2;
 
-        if(current_time + leeway >= unlock_time)
+        if (current_time + leeway >= unlock_time)
             return true;
         else
             return false;
@@ -191,23 +176,22 @@ CurrentBlockchainStatus::is_tx_spendtime_unlocked(
     return false;
 }
 
-bool
-CurrentBlockchainStatus::get_block(uint64_t height, block &blk)
+bool CurrentBlockchainStatus::get_block(uint64_t height, block &blk)
 {
     return mcore->get_block_from_height(height, blk);
 }
 
-bool
-CurrentBlockchainStatus::get_block_txs(const block &blk, list <transaction> &blk_txs)
+bool CurrentBlockchainStatus::get_block_txs(const block &blk, list<transaction> &blk_txs)
 {
     // get all transactions in the block found
     // initialize the first list with transaction for solving
     // the block i.e. coinbase tx.
     blk_txs.push_back(blk.miner_tx);
 
-    list <crypto::hash> missed_txs;
+    list<crypto::hash> missed_txs;
 
-    if (!core_storage->get_transactions(blk.tx_hashes, blk_txs, missed_txs)) {
+    if (!core_storage->get_transactions(blk.tx_hashes, blk_txs, missed_txs))
+    {
         cerr << "Cant get transactions in block: " << get_block_hash(blk) << endl;
         return false;
     }
@@ -215,15 +199,12 @@ CurrentBlockchainStatus::get_block_txs(const block &blk, list <transaction> &blk
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::tx_exist(const crypto::hash& tx_hash)
+bool CurrentBlockchainStatus::tx_exist(const crypto::hash &tx_hash)
 {
     return core_storage->have_tx(tx_hash);
 }
 
-bool
-CurrentBlockchainStatus::tx_exist(const crypto::hash& tx_hash, uint64_t& tx_index)
+bool CurrentBlockchainStatus::tx_exist(const crypto::hash &tx_hash, uint64_t &tx_index)
 {
     if (!core_storage->get_db().tx_exists(tx_hash, tx_index))
     {
@@ -233,9 +214,7 @@ CurrentBlockchainStatus::tx_exist(const crypto::hash& tx_hash, uint64_t& tx_inde
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::tx_exist(const string& tx_hash_str, uint64_t& tx_index)
+bool CurrentBlockchainStatus::tx_exist(const string &tx_hash_str, uint64_t &tx_index)
 {
     crypto::hash tx_hash;
 
@@ -247,8 +226,7 @@ CurrentBlockchainStatus::tx_exist(const string& tx_hash_str, uint64_t& tx_index)
     return false;
 }
 
-bool
-CurrentBlockchainStatus::tx_exist(const string& tx_hash_str)
+bool CurrentBlockchainStatus::tx_exist(const string &tx_hash_str)
 {
     crypto::hash tx_hash;
 
@@ -260,10 +238,9 @@ CurrentBlockchainStatus::tx_exist(const string& tx_hash_str)
     throw runtime_error("(hex_to_pod(tx_hash_str, tx_hash) failed!");
 }
 
-bool
-CurrentBlockchainStatus::get_tx_with_output(
-        uint64_t output_idx, uint64_t amount,
-        transaction& tx, uint64_t& output_idx_in_tx)
+bool CurrentBlockchainStatus::get_tx_with_output(
+    uint64_t output_idx, uint64_t amount,
+    transaction &tx, uint64_t &output_idx_in_tx)
 {
 
     tx_out_index tx_out_idx;
@@ -273,15 +250,14 @@ CurrentBlockchainStatus::get_tx_with_output(
         // get pair pair<crypto::hash, uint64_t> where first is tx hash
         // and second is local index of the output i in that tx
         tx_out_idx = core_storage->get_db()
-                .get_output_tx_and_index(amount, output_idx);
+                         .get_output_tx_and_index(amount, output_idx);
     }
     catch (const OUTPUT_DNE &e)
     {
 
         string out_msg = fmt::format(
-                "Output with amount {:d} and index {:d} does not exist!",
-                amount, output_idx
-        );
+            "Output with amount {:d} and index {:d} does not exist!",
+            amount, output_idx);
 
         cerr << out_msg << endl;
 
@@ -300,10 +276,9 @@ CurrentBlockchainStatus::get_tx_with_output(
     return true;
 }
 
-bool
-CurrentBlockchainStatus::get_output_keys(const uint64_t& amount,
-            const vector<uint64_t>& absolute_offsets,
-            vector<cryptonote::output_data_t>& outputs)
+bool CurrentBlockchainStatus::get_output_keys(const uint64_t &amount,
+                                              const vector<uint64_t> &absolute_offsets,
+                                              vector<cryptonote::output_data_t> &outputs)
 {
     try
     {
@@ -311,7 +286,7 @@ CurrentBlockchainStatus::get_output_keys(const uint64_t& amount,
                                               absolute_offsets,
                                               outputs);
     }
-    catch (const OUTPUT_DNE& e)
+    catch (const OUTPUT_DNE &e)
     {
         cerr << "get_output_keys: " << e.what() << endl;
         return false;
@@ -320,30 +295,28 @@ CurrentBlockchainStatus::get_output_keys(const uint64_t& amount,
     return true;
 }
 
-
 string
 CurrentBlockchainStatus::get_account_integrated_address_as_str(
-        crypto::hash8 const& payment_id8)
+    crypto::hash8 const &payment_id8)
 {
     return cryptonote::get_account_integrated_address_as_str(net_type,
-                    import_payment_address.address, payment_id8);
+                                                             import_payment_address.address, payment_id8);
 }
 
 string
 CurrentBlockchainStatus::get_account_integrated_address_as_str(
-        string const& payment_id8_str)
+    string const &payment_id8_str)
 {
     crypto::hash8 payment_id8;
 
     if (!hex_to_pod(payment_id8_str, payment_id8))
-        return string {};
+        return string{};
 
     return get_account_integrated_address_as_str(payment_id8);
 }
 
-bool
-CurrentBlockchainStatus::get_amount_specific_indices(const crypto::hash& tx_hash,
-                            vector<uint64_t>& out_indices)
+bool CurrentBlockchainStatus::get_amount_specific_indices(const crypto::hash &tx_hash,
+                                                          vector<uint64_t> &out_indices)
 {
     try
     {
@@ -353,12 +326,12 @@ CurrentBlockchainStatus::get_amount_specific_indices(const crypto::hash& tx_hash
         if (core_storage->get_db().tx_exists(tx_hash, tx_index))
         {
             out_indices = core_storage->get_db()
-                    .get_tx_amount_output_indices(tx_index);
+                              .get_tx_amount_output_indices(tx_index);
 
             return true;
         }
     }
-    catch(const exception& e)
+    catch (const exception &e)
     {
         cerr << e.what() << endl;
     }
@@ -366,13 +339,12 @@ CurrentBlockchainStatus::get_amount_specific_indices(const crypto::hash& tx_hash
     return false;
 }
 
-bool
-CurrentBlockchainStatus::get_random_outputs(
-        const vector<uint64_t>& amounts,
-        const uint64_t& outs_count,
-        vector<COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::outs_for_amount>& found_outputs)
+bool CurrentBlockchainStatus::get_random_outputs(
+    const vector<uint64_t> &amounts,
+    const uint64_t &outs_count,
+    vector<COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::outs_for_amount> &found_outputs)
 {
-    rpccalls rpc {deamon_url};
+    rpccalls rpc{deamon_url};
 
     string error_msg;
 
@@ -385,14 +357,12 @@ CurrentBlockchainStatus::get_random_outputs(
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::get_output(
-        const uint64_t amount,
-        const uint64_t global_output_index,
-        COMMAND_RPC_GET_OUTPUTS_BIN::outkey& output_info)
+bool CurrentBlockchainStatus::get_output(
+    const uint64_t amount,
+    const uint64_t global_output_index,
+    COMMAND_RPC_GET_OUTPUTS_BIN::outkey &output_info)
 {
-    rpccalls rpc {deamon_url};
+    rpccalls rpc{deamon_url};
 
     string error_msg;
 
@@ -405,11 +375,9 @@ CurrentBlockchainStatus::get_output(
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::get_dynamic_per_kb_fee_estimate(uint64_t& fee_estimated)
+bool CurrentBlockchainStatus::get_dynamic_per_kb_fee_estimate(uint64_t &fee_estimated)
 {
-    rpccalls rpc {deamon_url};
+    rpccalls rpc{deamon_url};
 
     string error_msg;
 
@@ -424,11 +392,9 @@ CurrentBlockchainStatus::get_dynamic_per_kb_fee_estimate(uint64_t& fee_estimated
     return true;
 }
 
-
-bool
-CurrentBlockchainStatus::commit_tx(const string& tx_blob, string& error_msg, bool do_not_relay)
+bool CurrentBlockchainStatus::commit_tx(const string &tx_blob, string &error_msg, bool do_not_relay)
 {
-    rpccalls rpc {deamon_url};
+    rpccalls rpc{deamon_url};
 
     if (!rpc.commit_tx(tx_blob, error_msg, do_not_relay))
     {
@@ -439,14 +405,13 @@ CurrentBlockchainStatus::commit_tx(const string& tx_blob, string& error_msg, boo
     return true;
 }
 
-bool
-CurrentBlockchainStatus::read_mempool()
+bool CurrentBlockchainStatus::read_mempool()
 {
-    rpccalls rpc {deamon_url};
+    rpccalls rpc{deamon_url};
 
     string error_msg;
 
-    std::lock_guard<std::mutex> lck (getting_mempool_txs);
+    std::lock_guard<std::mutex> lck(getting_mempool_txs);
 
     // clear current mempool txs vector
     // repopulate it with each execution of read_mempool()
@@ -481,8 +446,8 @@ CurrentBlockchainStatus::read_mempool()
             return false;
         }
 
-        (void) tx_hash;
-        (void) tx_prefix_hash;
+        (void)tx_hash;
+        (void)tx_prefix_hash;
 
         mempool_txs.emplace_back(_tx_info.receive_time, tx);
 
@@ -494,15 +459,14 @@ CurrentBlockchainStatus::read_mempool()
 vector<pair<uint64_t, transaction>>
 CurrentBlockchainStatus::get_mempool_txs()
 {
-    std::lock_guard<std::mutex> lck (getting_mempool_txs);
+    std::lock_guard<std::mutex> lck(getting_mempool_txs);
     return mempool_txs;
 }
 
-bool
-CurrentBlockchainStatus::search_if_payment_made(
-        const string& payment_id_str,
-        const uint64_t& desired_amount,
-        string& tx_hash_with_payment)
+bool CurrentBlockchainStatus::search_if_payment_made(
+    const string &payment_id_str,
+    const uint64_t &desired_amount,
+    string &tx_hash_with_payment)
 {
 
     vector<pair<uint64_t, transaction>> mempool_transactions = get_mempool_txs();
@@ -511,7 +475,7 @@ CurrentBlockchainStatus::search_if_payment_made(
 
     vector<transaction> txs_to_check;
 
-    for (auto& mtx: mempool_transactions)
+    for (auto &mtx : mempool_transactions)
     {
         txs_to_check.push_back(mtx.second);
     }
@@ -524,12 +488,13 @@ CurrentBlockchainStatus::search_if_payment_made(
         // get block cointaining this tx
         block blk;
 
-        if (!get_block(blk_i, blk)) {
+        if (!get_block(blk_i, blk))
+        {
             cerr << "Cant get block of height: " + to_string(blk_i) << endl;
             return false;
         }
 
-        list <cryptonote::transaction> blk_txs;
+        list<cryptonote::transaction> blk_txs;
 
         if (!get_block_txs(blk, blk_txs))
         {
@@ -542,7 +507,7 @@ CurrentBlockchainStatus::search_if_payment_made(
         txs_to_check.insert(txs_to_check.end(), blk_txs.begin(), blk_txs.end());
     }
 
-    for (transaction& tx: txs_to_check)
+    for (transaction &tx : txs_to_check)
     {
         if (is_coinbase(tx))
         {
@@ -576,14 +541,14 @@ CurrentBlockchainStatus::search_if_payment_made(
 
         public_key tx_pub_key = xmreg::get_tx_pub_key_from_received_outs(tx);
 
-
         // public transaction key is combined with our viewkey
         // to create, so called, derived key.
         key_derivation derivation;
 
         if (!generate_key_derivation(tx_pub_key, import_payment_viewkey, derivation))
         {
-            cerr << "Cant get derived key for: "  << "\n"
+            cerr << "Cant get derived key for: "
+                 << "\n"
                  << "pub_tx_key: " << tx_pub_key << " and "
                  << "prv_view_key" << import_payment_viewkey << endl;
 
@@ -619,7 +584,6 @@ CurrentBlockchainStatus::search_if_payment_made(
         // for each output, in a tx, check if it belongs
         // to the given account of specific address and viewkey
 
-
         //          <public_key  , amount  , out idx>
         vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs;
 
@@ -627,10 +591,9 @@ CurrentBlockchainStatus::search_if_payment_made(
 
         string tx_hash_str = pod_to_hex(get_transaction_hash(tx));
 
+        uint64_t total_received{0};
 
-        uint64_t total_received {0};
-
-        for (auto& out: outputs)
+        for (auto &out : outputs)
         {
             txout_to_key txout_k = std::get<0>(out);
             uint64_t amount = std::get<1>(out);
@@ -680,8 +643,6 @@ CurrentBlockchainStatus::search_if_payment_made(
 
             } // if (mine_output && tx.version == 2)
 
-
-
             if (mine_output)
             {
                 total_received += amount;
@@ -703,9 +664,8 @@ CurrentBlockchainStatus::search_if_payment_made(
     return false;
 }
 
-
 string
-CurrentBlockchainStatus::get_payment_id_as_string(const transaction& tx)
+CurrentBlockchainStatus::get_payment_id_as_string(const transaction &tx)
 {
     crypto::hash payment_id = null_hash;
     crypto::hash8 payment_id8 = null_hash8;
@@ -726,17 +686,15 @@ CurrentBlockchainStatus::get_payment_id_as_string(const transaction& tx)
     return payment_id_str;
 }
 
-
 output_data_t
 CurrentBlockchainStatus::get_output_key(uint64_t amount, uint64_t global_amount_index)
 {
     return core_storage->get_db().get_output_key(amount, global_amount_index);
 }
 
-bool
-CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
+bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (search_thread_exist(acc.address))
     {
@@ -749,36 +707,35 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     {
         // make a tx_search object for the given xmr account
         //searching_threads.emplace(acc.address, new TxSearch(acc)); // does not work on older gcc
-                                                                     // such as the one in ubuntu 16.04
-        searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc,1));
+        // such as the one in ubuntu 16.04
+        searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 1));
     }
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         cerr << "Faild created a search thread " << endl;
         return false;
     }
 
     // start the thread for the created object
-    std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
+    std::thread t{&TxSearch::search, searching_threads[acc.address].get()};
     t.detach();
     return true;
 }
 
-bool
-CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
+bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     // start the thread for the created object
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
-    unique_ptr<TxSearch> ut0=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t0 {&TxSearch::search, ut0.get()};
+    unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t0{&TxSearch::search, ut0.get()};
     ut0->set_searched_blk_no(0);
 
     // unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
     // std::thread t1 {&TxSearch::search, ut1.get()};
     // ut1->set_searched_blk_no(1);
-    
+
     // unique_ptr<TxSearch> ut2=unique_ptr<TxSearch>(new TxSearch(acc,10));
     // std::thread t2 {&TxSearch::search, ut2.get()};
     // ut2->set_searched_blk_no(2);
@@ -802,7 +759,7 @@ CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
     // unique_ptr<TxSearch> ut7=unique_ptr<TxSearch>(new TxSearch(acc,10));
     // std::thread t7 {&TxSearch::search, ut7.get()};
     // ut7->set_searched_blk_no(7);
-    
+
     // unique_ptr<TxSearch> ut8=unique_ptr<TxSearch>(new TxSearch(acc,10));
     // std::thread t8 {&TxSearch::search, ut8.get()};
     // ut8->set_searched_blk_no(8);
@@ -812,7 +769,7 @@ CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
     // ut9->set_searched_blk_no(9);
 
     t0.detach();
-   // t1.detach();
+    // t1.detach();
     // t2.detach();
     // t3.detach();
     // t4.detach();
@@ -821,14 +778,12 @@ CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
     // t7.detach();
     // t8.detach();
     // t9.detach();
-    
 
     return true;
 }
-bool
-CurrentBlockchainStatus::ping_search_thread(const string& address)
+bool CurrentBlockchainStatus::ping_search_thread(const string &address)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (!search_thread_exist(address))
     {
@@ -842,11 +797,10 @@ CurrentBlockchainStatus::ping_search_thread(const string& address)
     return true;
 }
 
-bool
-CurrentBlockchainStatus::get_searched_blk_no(const string& address,
-                                             uint64_t& searched_blk_no)
+bool CurrentBlockchainStatus::get_searched_blk_no(const string &address,
+                                                  uint64_t &searched_blk_no)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (!search_thread_exist(address))
     {
@@ -860,12 +814,11 @@ CurrentBlockchainStatus::get_searched_blk_no(const string& address,
     return true;
 }
 
-bool
-CurrentBlockchainStatus::get_known_outputs_keys(
-        string const& address,
-        vector<pair<string, uint64_t>>& known_outputs_keys)
+bool CurrentBlockchainStatus::get_known_outputs_keys(
+    string const &address,
+    vector<pair<string, uint64_t>> &known_outputs_keys)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (!search_thread_exist(address))
     {
@@ -874,15 +827,12 @@ CurrentBlockchainStatus::get_known_outputs_keys(
         return false;
     }
 
-
-    known_outputs_keys
-            = searching_threads[address].get()->get_known_outputs_keys();
+    known_outputs_keys = searching_threads[address].get()->get_known_outputs_keys();
 
     return true;
 }
 
-bool
-CurrentBlockchainStatus::search_thread_exist(const string& address)
+bool CurrentBlockchainStatus::search_thread_exist(const string &address)
 {
     // no mutex here, as this will be executed
     // from other methods, which do use mutex.
@@ -890,13 +840,12 @@ CurrentBlockchainStatus::search_thread_exist(const string& address)
     return searching_threads.count(address) > 0;
 }
 
-bool
-CurrentBlockchainStatus::get_xmr_address_viewkey(
-        const string& address_str,
-        address_parse_info& address,
-        secret_key& viewkey)
+bool CurrentBlockchainStatus::get_xmr_address_viewkey(
+    const string &address_str,
+    address_parse_info &address,
+    secret_key &viewkey)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (!search_thread_exist(address_str))
     {
@@ -911,12 +860,11 @@ CurrentBlockchainStatus::get_xmr_address_viewkey(
     return true;
 };
 
-bool
-CurrentBlockchainStatus::find_txs_in_mempool(
-        const string& address_str,
-        json& transactions)
+bool CurrentBlockchainStatus::find_txs_in_mempool(
+    const string &address_str,
+    json &transactions)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (searching_threads.count(address_str) == 0)
     {
@@ -925,21 +873,19 @@ CurrentBlockchainStatus::find_txs_in_mempool(
         return false;
     }
 
-    transactions = searching_threads[address_str].get()
-            ->find_txs_in_mempool(mempool_txs);
+    transactions = searching_threads[address_str].get()->find_txs_in_mempool(mempool_txs);
 
     return true;
 };
 
-bool
-CurrentBlockchainStatus::find_tx_in_mempool(
-        crypto::hash const& tx_hash,
-        transaction& tx)
+bool CurrentBlockchainStatus::find_tx_in_mempool(
+    crypto::hash const &tx_hash,
+    transaction &tx)
 {
 
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
-    for (auto const& mtx: mempool_txs)
+    for (auto const &mtx : mempool_txs)
     {
         const transaction &m_tx = mtx.second;
 
@@ -953,37 +899,35 @@ CurrentBlockchainStatus::find_tx_in_mempool(
     return false;
 }
 
-bool
-CurrentBlockchainStatus::find_key_images_in_mempool(std::vector<txin_v> const& vin)
+bool CurrentBlockchainStatus::find_key_images_in_mempool(std::vector<txin_v> const &vin)
 {
     mempool_txs_t mempool_tx_cpy;
 
     {
         // make local copy of the mempool, so that we dont lock it for
         // long, as this function can take longer to execute
-        std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+        std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
         mempool_tx_cpy = mempool_txs;
     }
 
     // perform exhostive search to check if any key image in vin vector
     // is in the mempool. This is used to check if a tx generated by the frontend
     // is using any key images that area already in the mempool.
-    for (auto const& kin: vin)
+    for (auto const &kin : vin)
     {
-        if(kin.type() != typeid(txin_to_key))
+        if (kin.type() != typeid(txin_to_key))
             continue;
 
         // get tx input key
-        const txin_to_key& tx_in_to_key
-                = boost::get<cryptonote::txin_to_key>(kin);
+        const txin_to_key &tx_in_to_key = boost::get<cryptonote::txin_to_key>(kin);
 
-        for (auto const& mtx: mempool_tx_cpy)
+        for (auto const &mtx : mempool_tx_cpy)
         {
             const transaction &m_tx = mtx.second;
 
             vector<txin_to_key> input_key_imgs = xmreg::get_key_images(m_tx);
 
-            for (auto const& mki: input_key_imgs)
+            for (auto const &mki : input_key_imgs)
             {
                 // if a matching key image found in the mempool
                 if (mki.k_image == tx_in_to_key.k_image)
@@ -995,36 +939,29 @@ CurrentBlockchainStatus::find_key_images_in_mempool(std::vector<txin_v> const& v
     return false;
 }
 
-
-bool
-CurrentBlockchainStatus::find_key_images_in_mempool(transaction const& tx)
+bool CurrentBlockchainStatus::find_key_images_in_mempool(transaction const &tx)
 {
     return find_key_images_in_mempool(tx.vin);
 }
 
-
-bool
-CurrentBlockchainStatus::get_tx(crypto::hash const& tx_hash, transaction& tx)
+bool CurrentBlockchainStatus::get_tx(crypto::hash const &tx_hash, transaction &tx)
 {
     return mcore->get_tx(tx_hash, tx);
 }
 
-
-bool
-CurrentBlockchainStatus::get_tx(string const& tx_hash_str, transaction& tx)
+bool CurrentBlockchainStatus::get_tx(string const &tx_hash_str, transaction &tx)
 {
     crypto::hash tx_hash;
 
     if (!hex_to_pod(tx_hash_str, tx_hash))
     {
-       return false;
+        return false;
     }
 
     return mcore->get_tx(tx_hash, tx);
 }
 
-bool
-CurrentBlockchainStatus::get_tx_block_height(crypto::hash const& tx_hash, int64_t& tx_height)
+bool CurrentBlockchainStatus::get_tx_block_height(crypto::hash const &tx_hash, int64_t &tx_height)
 {
     if (!tx_exist(tx_hash))
         return false;
@@ -1034,10 +971,9 @@ CurrentBlockchainStatus::get_tx_block_height(crypto::hash const& tx_hash, int64_
     return true;
 }
 
-bool
-CurrentBlockchainStatus::set_new_searched_blk_no(const string& address, uint64_t new_value)
+bool CurrentBlockchainStatus::set_new_searched_blk_no(const string &address, uint64_t new_value)
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (searching_threads.count(address) == 0)
     {
@@ -1051,13 +987,11 @@ CurrentBlockchainStatus::set_new_searched_blk_no(const string& address, uint64_t
     return true;
 }
 
-
-void
-CurrentBlockchainStatus::clean_search_thread_map()
+void CurrentBlockchainStatus::clean_search_thread_map()
 {
-    std::lock_guard<std::mutex> lck (searching_threads_map_mtx);
+    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
-    for (const auto& st: searching_threads)
+    for (const auto &st : searching_threads)
     {
         if (search_thread_exist(st.first) && st.second->still_searching() == false)
         {
@@ -1067,14 +1001,13 @@ CurrentBlockchainStatus::clean_search_thread_map()
     }
 }
 
-
 tuple<string, string, string>
 CurrentBlockchainStatus::construct_output_rct_field(
-        const uint64_t global_amount_index,
-        const uint64_t out_amount)
+    const uint64_t global_amount_index,
+    const uint64_t out_amount)
 {
 
-   transaction random_output_tx;
+    transaction random_output_tx;
     uint64_t output_idx_in_tx;
 
     // we got random outputs, but now we need to get rct data of those
@@ -1085,7 +1018,7 @@ CurrentBlockchainStatus::construct_output_rct_field(
             random_output_tx, output_idx_in_tx))
     {
         cerr << "cant get random output transaction" << endl;
-        return make_tuple(string {}, string {}, string {});
+        return make_tuple(string{}, string{}, string{});
     }
 
     //cout << pod_to_hex(out.out_key) << endl;
@@ -1098,11 +1031,10 @@ CurrentBlockchainStatus::construct_output_rct_field(
     string rtc_mask(64, '0');
     string rtc_amount(64, '0');
 
-
     if (random_output_tx.version > 1 && !is_coinbase(random_output_tx))
     {
-        rtc_outpk  = pod_to_hex(random_output_tx.rct_signatures.outPk[output_idx_in_tx].mask);
-        rtc_mask   = pod_to_hex(random_output_tx.rct_signatures.ecdhInfo[output_idx_in_tx].mask);
+        rtc_outpk = pod_to_hex(random_output_tx.rct_signatures.outPk[output_idx_in_tx].mask);
+        rtc_mask = pod_to_hex(random_output_tx.rct_signatures.ecdhInfo[output_idx_in_tx].mask);
         rtc_amount = pod_to_hex(random_output_tx.rct_signatures.ecdhInfo[output_idx_in_tx].amount);
     }
     else
@@ -1113,7 +1045,7 @@ CurrentBlockchainStatus::construct_output_rct_field(
 
         output_data_t od = get_output_key(out_amount, global_amount_index);
 
-        rtc_outpk  = pod_to_hex(od.commitment);
+        rtc_outpk = pod_to_hex(od.commitment);
 
         if (is_coinbase(random_output_tx)) // commenting this out. think its not needed.
         {                                  // as this function provides keys for mixin outputs
@@ -1124,11 +1056,9 @@ CurrentBlockchainStatus::construct_output_rct_field(
             // https://github.com/monero-project/monero/blob/master/src/blockchain_db/blockchain_db.cpp#L100
             // rtc_mask   = pod_to_hex(rct::identity());
         }
-
     }
 
     return make_tuple(rtc_outpk, rtc_mask, rtc_amount);
 };
 
-
-}
+} // namespace xmreg
