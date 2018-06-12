@@ -526,7 +526,7 @@ void TxSearch::stop()
 
 TxSearch::~TxSearch()
 {
-    cout << std::this_thread::get_id() << edl;
+    cout << std::this_thread::get_id() << endl;
     cout << "TxSearch destroyed" << endl;
 }
 
