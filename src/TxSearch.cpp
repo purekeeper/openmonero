@@ -17,6 +17,7 @@ namespace xmreg
 
 TxSearch::TxSearch(XmrAccount &_acc, int _step)
 {
+
     cout << "_step=";
     cout << _step << endl;
     cout << std::this_thread::get_id() << endl;
@@ -491,6 +492,7 @@ void TxSearch::search()
             }
 
             //++searched_blk_no;
+            cout << std::this_thread::get_id() << endl;
             cout << "before +" << endl;
             cout << searched_blk_no << endl;
             cout << "step=";
