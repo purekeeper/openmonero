@@ -19,6 +19,7 @@ TxSearch::TxSearch(XmrAccount &_acc, int _step)
 {
     cout << "_step=";
     cout << _step << endl;
+    cout << std::this_thread::get_id() << endl;
     acc = make_shared<XmrAccount>(_acc);
 
     step = _step;
