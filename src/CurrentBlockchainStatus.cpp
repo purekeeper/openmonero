@@ -775,52 +775,52 @@ CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
     std::thread t0 {&TxSearch::search, ut0.get()};
     ut0->set_searched_blk_no(0);
 
-    unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t1 {&TxSearch::search, ut1.get()};
-    ut1->set_searched_blk_no(1);
+    // unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t1 {&TxSearch::search, ut1.get()};
+    // ut1->set_searched_blk_no(1);
     
-    unique_ptr<TxSearch> ut2=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t2 {&TxSearch::search, ut2.get()};
-    ut2->set_searched_blk_no(2);
+    // unique_ptr<TxSearch> ut2=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t2 {&TxSearch::search, ut2.get()};
+    // ut2->set_searched_blk_no(2);
 
-    unique_ptr<TxSearch> ut3=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t3 {&TxSearch::search, ut3.get()};
-    ut3->set_searched_blk_no(3);
+    // unique_ptr<TxSearch> ut3=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t3 {&TxSearch::search, ut3.get()};
+    // ut3->set_searched_blk_no(3);
 
-    unique_ptr<TxSearch> ut4=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t4 {&TxSearch::search, ut4.get()};
-    ut4->set_searched_blk_no(4);
+    // unique_ptr<TxSearch> ut4=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t4 {&TxSearch::search, ut4.get()};
+    // ut4->set_searched_blk_no(4);
 
-    unique_ptr<TxSearch> ut5=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t5 {&TxSearch::search, ut5.get()};
-    ut5->set_searched_blk_no(5);
+    // unique_ptr<TxSearch> ut5=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t5 {&TxSearch::search, ut5.get()};
+    // ut5->set_searched_blk_no(5);
 
-    unique_ptr<TxSearch> ut6=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t6 {&TxSearch::search, ut6.get()};
-    ut6->set_searched_blk_no(6);
+    // unique_ptr<TxSearch> ut6=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t6 {&TxSearch::search, ut6.get()};
+    // ut6->set_searched_blk_no(6);
 
-    unique_ptr<TxSearch> ut7=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t7 {&TxSearch::search, ut7.get()};
-    ut7->set_searched_blk_no(7);
+    // unique_ptr<TxSearch> ut7=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t7 {&TxSearch::search, ut7.get()};
+    // ut7->set_searched_blk_no(7);
     
-    unique_ptr<TxSearch> ut8=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t8 {&TxSearch::search, ut8.get()};
-    ut8->set_searched_blk_no(8);
+    // unique_ptr<TxSearch> ut8=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t8 {&TxSearch::search, ut8.get()};
+    // ut8->set_searched_blk_no(8);
 
-    unique_ptr<TxSearch> ut9=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    std::thread t9 {&TxSearch::search, ut9.get()};
-    ut9->set_searched_blk_no(9);
+    // unique_ptr<TxSearch> ut9=unique_ptr<TxSearch>(new TxSearch(acc,10));
+    // std::thread t9 {&TxSearch::search, ut9.get()};
+    // ut9->set_searched_blk_no(9);
 
     t0.detach();
-    t1.detach();
-    t2.detach();
-    t3.detach();
-    t4.detach();
-    t5.detach();
-    t6.detach();
-    t7.detach();
-    t8.detach();
-    t9.detach();
+   // t1.detach();
+    // t2.detach();
+    // t3.detach();
+    // t4.detach();
+    // t5.detach();
+    // t6.detach();
+    // t7.detach();
+    // t8.detach();
+    // t9.detach();
     
 
     return true;
