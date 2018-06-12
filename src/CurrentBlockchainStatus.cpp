@@ -724,7 +724,7 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 
 bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
 {
-    std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
+    //std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     // start the thread for the created object
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
@@ -732,6 +732,7 @@ bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
     std::thread t0{&TxSearch::search, ut0.get()};
     ut0->set_searched_blk_no(0);
 
+    cout << "t0----启动-----" << endl;
     // unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
     // std::thread t1 {&TxSearch::search, ut1.get()};
     // ut1->set_searched_blk_no(1);
