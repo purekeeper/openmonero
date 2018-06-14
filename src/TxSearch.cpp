@@ -20,6 +20,8 @@ TxSearch::TxSearch(XmrAccount &_acc, uint64_t _step)
 
     cout << "_step=";
     cout << _step << endl;
+    cout << "1searched_blk_no=";
+    cout << searched_blk_no << endl;
     cout << std::this_thread::get_id() << endl;
     acc = make_shared<XmrAccount>(_acc);
     step = _step;
@@ -71,6 +73,11 @@ void TxSearch::search()
     {
         while (continue_search)
         {
+            cout << std::this_thread::get_id() << endl;
+            cout << "0searched_blk_no=";
+            cout << searched_blk_no << endl;
+            cout << "0step=";
+            cout << step << endl;
             cout << "0000000000000000" << endl;
             ++loop_idx;
 
@@ -479,7 +486,7 @@ void TxSearch::search()
                     blk_timestamp_mysql_format = unique_ptr<DateTime>(
                         new DateTime(static_cast<time_t>(blk.timestamp)));
                 }
-
+                cout << "999999999999999999" << endl;
                 updated_acc.scanned_block_height = searched_blk_no;
                 updated_acc.scanned_block_timestamp = *blk_timestamp_mysql_format;
 
@@ -492,7 +499,7 @@ void TxSearch::search()
 
                 current_timestamp = loop_timestamp;
             }
-
+            cout << "10000000000000000000000000" << endl;
             //++searched_blk_no;
             cout << std::this_thread::get_id() << endl;
             cout << "before +" << endl;
