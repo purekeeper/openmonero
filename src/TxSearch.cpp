@@ -126,7 +126,7 @@ void TxSearch::search()
 
                 continue;
             }
-cout << "222222222222222222222" << endl;
+            cout << "222222222222222222222" << endl;
             // get all txs in the block
             list<cryptonote::transaction> blk_txs;
 
@@ -187,7 +187,7 @@ cout << "222222222222222222222" << endl;
                          << "not found in blockchain !" << '\n';
                     continue;
                 }
-cout << "444444444444444444444" << endl;
+                cout << "444444444444444444444" << endl;
                 // FIRSt step.
                 oi_identification.identify_outputs();
 
@@ -242,7 +242,7 @@ cout << "444444444444444444444" << endl;
                         blk_timestamp_mysql_format = unique_ptr<DateTime>(
                             new DateTime(static_cast<time_t>(blk.timestamp)));
                     }
-cout << "555555555555555555555555" << endl;
+                    cout << "555555555555555555555555" << endl;
                     if (!mysql_transaction)
                     {
                         // start mysql transaction here
@@ -288,7 +288,7 @@ cout << "555555555555555555555555" << endl;
                         cerr << "cant get_amount_specific_indices!" << endl;
                         throw TxSearchException("cant get_amount_specific_indices!");
                     }
-cout << "666666666666666666" << endl;
+                    cout << "666666666666666666" << endl;
                     if (tx_mysql_id == 0)
                     {
                         //cerr << "tx_mysql_id is zero!" << endl;
@@ -389,7 +389,7 @@ cout << "666666666666666666" << endl;
                         } // if (xmr_accounts->output_exists(output_public_key_str, out))
 
                     } // for (auto& in_info: oi_identification.identified_inputs)
-cout << "7777777777777777" << endl;
+                    cout << "7777777777777777" << endl;
                     if (!inputs_found.empty())
                     {
                         // seems we have some inputs found. time
@@ -466,7 +466,7 @@ cout << "7777777777777777" << endl;
                     mysql_transaction->commit();
 
             } // for (const transaction& tx: blk_txs)
- cout << "88888888888888888888888" << endl;
+            cout << "88888888888888888888888" << endl;
             if ((loop_timestamp - current_timestamp > UPDATE_SCANNED_HEIGHT_INTERVAL) || searched_blk_no == CurrentBlockchainStatus::current_height)
             {
                 // update scanned_block_height every given interval
