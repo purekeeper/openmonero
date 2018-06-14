@@ -18,6 +18,7 @@
         "*.ipp": "cpp",
         "__locale": "cpp",
         "ios": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iostream": "cpp"
     }
 }

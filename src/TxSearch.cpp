@@ -15,14 +15,13 @@
 namespace xmreg
 {
 
-TxSearch::TxSearch(XmrAccount &_acc, int _step)
+TxSearch::TxSearch(XmrAccount &_acc, uint64_t _step)
 {
 
     cout << "_step=";
     cout << _step << endl;
     cout << std::this_thread::get_id() << endl;
     acc = make_shared<XmrAccount>(_acc);
-
     step = _step;
     // creates an mysql connection for this thread
     xmr_accounts = make_shared<MySqlAccounts>();
@@ -72,6 +71,7 @@ void TxSearch::search()
     {
         while (continue_search)
         {
+            cout << "0000000000000000" << endl;
             ++loop_idx;
 
             uint64_t loop_timestamp{current_timestamp};
@@ -90,12 +90,13 @@ void TxSearch::search()
                     // also check if we caught up with current blockchain height
                     if (searched_blk_no >= CurrentBlockchainStatus::current_height)
                     {
+
                         stop();
                         continue;
                     }
                 }
             }
-
+            cout << "11111111111111111111111" << endl;
             if (searched_blk_no > CurrentBlockchainStatus::current_height)
             {
                 fmt::print("searched_blk_no {:d} and current_height {:d}\n",
@@ -125,7 +126,7 @@ void TxSearch::search()
 
                 continue;
             }
-
+cout << "222222222222222222222" << endl;
             // get all txs in the block
             list<cryptonote::transaction> blk_txs;
 
@@ -162,6 +163,7 @@ void TxSearch::search()
             // mixin purposes. Thus, we sent to the front end the list of key images
             // that we think are yours, and the frontend, because it has spend key,
             // can filter out false positives.
+            cout << "3333333333333333333" << endl;
             for (transaction &tx : blk_txs)
             {
                 // Class that is responsible for identification of our outputs
@@ -185,7 +187,7 @@ void TxSearch::search()
                          << "not found in blockchain !" << '\n';
                     continue;
                 }
-
+cout << "444444444444444444444" << endl;
                 // FIRSt step.
                 oi_identification.identify_outputs();
 
@@ -240,7 +242,7 @@ void TxSearch::search()
                         blk_timestamp_mysql_format = unique_ptr<DateTime>(
                             new DateTime(static_cast<time_t>(blk.timestamp)));
                     }
-
+cout << "555555555555555555555555" << endl;
                     if (!mysql_transaction)
                     {
                         // start mysql transaction here
@@ -286,7 +288,7 @@ void TxSearch::search()
                         cerr << "cant get_amount_specific_indices!" << endl;
                         throw TxSearchException("cant get_amount_specific_indices!");
                     }
-
+cout << "666666666666666666" << endl;
                     if (tx_mysql_id == 0)
                     {
                         //cerr << "tx_mysql_id is zero!" << endl;
@@ -387,7 +389,7 @@ void TxSearch::search()
                         } // if (xmr_accounts->output_exists(output_public_key_str, out))
 
                     } // for (auto& in_info: oi_identification.identified_inputs)
-
+cout << "7777777777777777" << endl;
                     if (!inputs_found.empty())
                     {
                         // seems we have some inputs found. time
@@ -464,7 +466,7 @@ void TxSearch::search()
                     mysql_transaction->commit();
 
             } // for (const transaction& tx: blk_txs)
-
+ cout << "88888888888888888888888" << endl;
             if ((loop_timestamp - current_timestamp > UPDATE_SCANNED_HEIGHT_INTERVAL) || searched_blk_no == CurrentBlockchainStatus::current_height)
             {
                 // update scanned_block_height every given interval

@@ -21,12 +21,10 @@ using namespace std;
 class XmrAccount;
 class MySqlAccounts;
 
-class TxSearchException: public std::runtime_error
+class TxSearchException : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
 };
-
-
 
 class TxSearch
 {
@@ -38,7 +36,7 @@ class TxSearch
     // using the service.
     static uint64_t thread_search_life; // in seconds
 
-    bool continue_search {true};
+    bool continue_search{true};
 
     mutex getting_known_outputs_keys;
 
@@ -49,7 +47,7 @@ class TxSearch
     // represents a row in mysql's Accounts table
     shared_ptr<XmrAccount> acc;
 
-    int step;
+    atomic<uint64_t> step;
 
     // stores known output public keys.
     // used as a cash to fast look up of
@@ -69,9 +67,8 @@ class TxSearch
     address_parse_info address;
     secret_key viewkey;
 
-public:
-
-    TxSearch(XmrAccount& _acc,int _step);
+  public:
+    TxSearch(XmrAccount &_acc, uint64_t _step);
 
     void
     search();
@@ -98,7 +95,6 @@ public:
 
     vector<pair<string, uint64_t>>
     get_known_outputs_keys();
-
 
     /**
      * Search for our txs in the mempool
@@ -132,10 +128,7 @@ public:
 
     static void
     set_search_thread_life(uint64_t life_seconds);
-
 };
 
-
-
-}
+} // namespace xmreg
 #endif //RESTBED_XMR_TXSEARCH_H
