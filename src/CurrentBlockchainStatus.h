@@ -77,17 +77,17 @@ struct CurrentBlockchainStatus
         // map, key is address to which a running thread belongs to.
         // make it static to guarantee only one such map exist.
         static map<string, unique_ptr<TxSearch>> searching_threads;
-
-        static unique_ptr<TxSearch> ut0;
-        static unique_ptr<TxSearch> ut1;
-        static unique_ptr<TxSearch> ut2;
-        static unique_ptr<TxSearch> ut3;
-        static unique_ptr<TxSearch> ut4;
-        static unique_ptr<TxSearch> ut5;
-        static unique_ptr<TxSearch> ut6;
-        static unique_ptr<TxSearch> ut7;
-        static unique_ptr<TxSearch> ut8;
-        static unique_ptr<TxSearch> ut9;
+        static vector<unique_ptr<TxSearch>> utThreads;
+        // static unique_ptr<TxSearch> ut0;
+        // static unique_ptr<TxSearch> ut1;
+        // static unique_ptr<TxSearch> ut2;
+        // static unique_ptr<TxSearch> ut3;
+        // static unique_ptr<TxSearch> ut4;
+        // static unique_ptr<TxSearch> ut5;
+        // static unique_ptr<TxSearch> ut6;
+        // static unique_ptr<TxSearch> ut7;
+        // static unique_ptr<TxSearch> ut8;
+        // static unique_ptr<TxSearch> ut9;
         // since this class monitors current status
         // of the blockchain, its seems logical to
         // make object for accessing the blockchain here
