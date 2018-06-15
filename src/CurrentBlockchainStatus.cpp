@@ -708,7 +708,7 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
         // make a tx_search object for the given xmr account
         //searching_threads.emplace(acc.address, new TxSearch(acc)); // does not work on older gcc
         // such as the one in ubuntu 16.04
-        // searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+        searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 10));
     }
     catch (const std::exception &e)
     {
@@ -722,7 +722,8 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     // cout << "t----启动-----" << endl;
     // t.detach();
 
-    unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    // unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    unique_ptr<TxSearch> ut0 = searching_threads[acc.address];
     std::thread t{&TxSearch::search, ut0.get()};
     ut0.get()->set_searched_blk_no(0);
 
