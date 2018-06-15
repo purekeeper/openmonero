@@ -34,7 +34,16 @@ uint64_t CurrentBlockchainStatus::import_fee{10000000000}; // 0.01 xmr
 address_parse_info CurrentBlockchainStatus::import_payment_address;
 secret_key CurrentBlockchainStatus::import_payment_viewkey;
 map<string, unique_ptr<TxSearch>> CurrentBlockchainStatus::searching_threads;
-unique_ptr<TxSearch> CurrentBlockchainStatus::ut;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut0;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut1;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut2;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut3;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut4;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut5;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut6;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut7;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut8;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut9;
 cryptonote::Blockchain *CurrentBlockchainStatus::core_storage;
 unique_ptr<xmreg::MicroCore> CurrentBlockchainStatus::mcore;
 
@@ -710,7 +719,7 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
         // make a tx_search object for the given xmr account
         //searching_threads.emplace(acc.address, new TxSearch(acc)); // does not work on older gcc
         // such as the one in ubuntu 16.04
-        // searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+        searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 1));
     }
     catch (const std::exception &e)
     {
@@ -718,17 +727,9 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
         return false;
     }
 
-    // start the thread for the created object
-    // std::thread t{&TxSearch::search, searching_threads[acc.address].get()};
-    // searching_threads[acc.address].get()->set_searched_blk_no(0);
-    // cout << "t----启动-----" << endl;
-    // t.detach();
+    //start the thread for the created object
+    std::thread t{&TxSearch::search, searching_threads[acc.address].get()};
 
-    ut = unique_ptr<TxSearch>(new TxSearch(acc, 10));
-    std::thread t{&TxSearch::search, ut.get()};
-    ut.get()->set_searched_blk_no(0);
-
-    cout << "t----启动-----" << endl;
     t.detach();
     return true;
 }
@@ -740,57 +741,56 @@ bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
 
     // start the thread for the created object
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
-    ut = unique_ptr<TxSearch>(new TxSearch(acc, 10));
-    std::thread t0{&TxSearch::search, ut.get()};
-    ut.get()->set_searched_blk_no(0);
-
-    cout << "t0----启动-----" << endl;
-    // unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t1 {&TxSearch::search, ut1.get()};
-    // ut1->set_searched_blk_no(1);
-
-    // unique_ptr<TxSearch> ut2=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t2 {&TxSearch::search, ut2.get()};
-    // ut2->set_searched_blk_no(2);
-
-    // unique_ptr<TxSearch> ut3=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t3 {&TxSearch::search, ut3.get()};
-    // ut3->set_searched_blk_no(3);
-
-    // unique_ptr<TxSearch> ut4=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t4 {&TxSearch::search, ut4.get()};
-    // ut4->set_searched_blk_no(4);
-
-    // unique_ptr<TxSearch> ut5=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t5 {&TxSearch::search, ut5.get()};
-    // ut5->set_searched_blk_no(5);
-
-    // unique_ptr<TxSearch> ut6=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t6 {&TxSearch::search, ut6.get()};
-    // ut6->set_searched_blk_no(6);
-
-    // unique_ptr<TxSearch> ut7=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t7 {&TxSearch::search, ut7.get()};
-    // ut7->set_searched_blk_no(7);
-
-    // unique_ptr<TxSearch> ut8=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t8 {&TxSearch::search, ut8.get()};
-    // ut8->set_searched_blk_no(8);
-
-    // unique_ptr<TxSearch> ut9=unique_ptr<TxSearch>(new TxSearch(acc,10));
-    // std::thread t9 {&TxSearch::search, ut9.get()};
-    // ut9->set_searched_blk_no(9);
-
+    ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t0{&TxSearch::search, ut0.get()};
+    ut0.get()->set_searched_blk_no(0);
+    cout << "---启动0号扫描器----" << endl;
+    ut1 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t1{&TxSearch::search, ut1.get()};
+    ut1->set_searched_blk_no(1);
+    cout << "---启动1号扫描器----" << endl;
+    ut2 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t2{&TxSearch::search, ut2.get()};
+    ut2->set_searched_blk_no(2);
+    cout << "---启动2号扫描器----" << endl;
+    ut3 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t3{&TxSearch::search, ut3.get()};
+    ut3->set_searched_blk_no(3);
+    cout << "---启动3号扫描器----" << endl;
+    ut4 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t4{&TxSearch::search, ut4.get()};
+    ut4->set_searched_blk_no(4);
+    cout << "---启动4号扫描器----" << endl;
+    ut5 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t5{&TxSearch::search, ut5.get()};
+    ut5->set_searched_blk_no(5);
+    cout << "---启动5号扫描器----" << endl;
+    ut6 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t6{&TxSearch::search, ut6.get()};
+    ut6->set_searched_blk_no(6);
+    cout << "---启动6号扫描器----" << endl;
+    ut7 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t7{&TxSearch::search, ut7.get()};
+    ut7->set_searched_blk_no(7);
+    cout << "---启动7号扫描器----" << endl;
+    ut8 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t8{&TxSearch::search, ut8.get()};
+    ut8->set_searched_blk_no(8);
+    cout << "---启动8号扫描器----" << endl;
+    ut9 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t9{&TxSearch::search, ut9.get()};
+    ut9->set_searched_blk_no(9);
+    cout << "---启动9号扫描器----" << endl;
     t0.detach();
-    // t1.detach();
-    // t2.detach();
-    // t3.detach();
-    // t4.detach();
-    // t5.detach();
-    // t6.detach();
-    // t7.detach();
-    // t8.detach();
-    // t9.detach();
+    t1.detach();
+    t2.detach();
+    t3.detach();
+    t4.detach();
+    t5.detach();
+    t6.detach();
+    t7.detach();
+    t8.detach();
+    t9.detach();
 
     return true;
 }
