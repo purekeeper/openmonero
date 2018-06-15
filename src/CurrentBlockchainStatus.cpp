@@ -34,6 +34,7 @@ uint64_t CurrentBlockchainStatus::import_fee{10000000000}; // 0.01 xmr
 address_parse_info CurrentBlockchainStatus::import_payment_address;
 secret_key CurrentBlockchainStatus::import_payment_viewkey;
 map<string, unique_ptr<TxSearch>> CurrentBlockchainStatus::searching_threads;
+unique_ptr<TxSearch> CurrentBlockchainStatus::ut;
 cryptonote::Blockchain *CurrentBlockchainStatus::core_storage;
 unique_ptr<xmreg::MicroCore> CurrentBlockchainStatus::mcore;
 
@@ -694,6 +695,7 @@ CurrentBlockchainStatus::get_output_key(uint64_t amount, uint64_t global_amount_
 
 bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 {
+    return true;
     std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (search_thread_exist(acc.address))
@@ -708,7 +710,7 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
         // make a tx_search object for the given xmr account
         //searching_threads.emplace(acc.address, new TxSearch(acc)); // does not work on older gcc
         // such as the one in ubuntu 16.04
-        searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+        // searching_threads[acc.address] = unique_ptr<TxSearch>(new TxSearch(acc, 10));
     }
     catch (const std::exception &e)
     {
@@ -722,9 +724,9 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     // cout << "t----启动-----" << endl;
     // t.detach();
 
-    // unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
-    std::thread t{&TxSearch::search, searching_threads[acc.address].get()};
-    searching_threads[acc.address].get()->set_searched_blk_no(0);
+    ut = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t{&TxSearch::search, ut.get()};
+    ut.get()->set_searched_blk_no(0);
 
     cout << "t----启动-----" << endl;
     t.detach();
@@ -733,14 +735,14 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 
 bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
 {
-    return true;
+
     //std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     // start the thread for the created object
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
-    unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
-    std::thread t0{&TxSearch::search, ut0.get()};
-    ut0.get()->set_searched_blk_no(0);
+    ut = unique_ptr<TxSearch>(new TxSearch(acc, 10));
+    std::thread t0{&TxSearch::search, ut.get()};
+    ut.get()->set_searched_blk_no(0);
 
     cout << "t0----启动-----" << endl;
     // unique_ptr<TxSearch> ut1=unique_ptr<TxSearch>(new TxSearch(acc,10));

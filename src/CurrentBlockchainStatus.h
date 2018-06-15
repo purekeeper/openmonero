@@ -78,6 +78,7 @@ struct CurrentBlockchainStatus
         // make it static to guarantee only one such map exist.
         static map<string, unique_ptr<TxSearch>> searching_threads;
 
+        static unique_ptr<TxSearch> ut;
         // since this class monitors current status
         // of the blockchain, its seems logical to
         // make object for accessing the blockchain here
