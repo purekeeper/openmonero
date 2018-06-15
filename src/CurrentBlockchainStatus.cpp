@@ -694,7 +694,6 @@ CurrentBlockchainStatus::get_output_key(uint64_t amount, uint64_t global_amount_
 
 bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 {
-    return true;
     std::lock_guard<std::mutex> lck(searching_threads_map_mtx);
 
     if (search_thread_exist(acc.address))
