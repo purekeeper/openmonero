@@ -741,9 +741,10 @@ bool CurrentBlockchainStatus::start_tx_search_multity_thread(XmrAccount acc)
 
     // start the thread for the created object
     //std::thread t {&TxSearch::search, searching_threads[acc.address].get()};
-    for (int i = 0; i < 100; i++)
+    int thread_count=32;
+    for (int i = 0; i < thread_count; i++)
     {
-        utThreads.push_back(unique_ptr<TxSearch>(new TxSearch(acc, 100)));
+        utThreads.push_back(unique_ptr<TxSearch>(new TxSearch(acc, thread_count)));
         std::thread t{&TxSearch::search, utThreads[i].get()};
         utThreads[i].get()->set_searched_blk_no(i);
         cout << "---启动" << i << "号扫描器----" << endl;
