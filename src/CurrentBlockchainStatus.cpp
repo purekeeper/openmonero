@@ -723,7 +723,7 @@ bool CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     // t.detach();
 
     // unique_ptr<TxSearch> ut0 = unique_ptr<TxSearch>(new TxSearch(acc, 10));
-    unique_ptr<TxSearch> ut0 = searching_threads[acc.address];
+    static unique_ptr<TxSearch> ut0 = searching_threads[acc.address];
     std::thread t{&TxSearch::search, ut0.get()};
     ut0.get()->set_searched_blk_no(0);
 
