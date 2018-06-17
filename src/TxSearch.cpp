@@ -508,12 +508,12 @@ void TxSearch::search()
                 updated_acc.scanned_block_height = searched_blk_no;
                 updated_acc.scanned_block_timestamp = *blk_timestamp_mysql_format;
 
-                if (xmr_accounts->update(*acc, updated_acc))
-                {
-                    // iff success, set acc to updated_acc;
-                    cout << "scanned_block_height updated" << endl;
-                    *acc = updated_acc;
-                }
+                // if (xmr_accounts->update(*acc, updated_acc))
+                // {
+                //     // iff success, set acc to updated_acc;
+                //     cout << "scanned_block_height updated" << endl;
+                //     *acc = updated_acc;
+                // }
 
                 current_timestamp = loop_timestamp;
             }
