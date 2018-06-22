@@ -83,6 +83,8 @@ class TxSearch
     void
     set_searched_blk_no(uint64_t new_value);
 
+    void set_updateScanBlockHeight(bool update);
+
     uint64_t
     get_searched_blk_no() const;
 
