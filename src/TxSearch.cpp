@@ -490,7 +490,7 @@ void TxSearch::search()
             // cout << "8step=";
             // cout << step << endl;
             // cout << "88888888888888888888888" << endl;
-            if ((loop_timestamp - current_timestamp > UPDATE_SCANNED_HEIGHT_INTERVAL) || searched_blk_no == CurrentBlockchainStatus::current_height)
+            if (updateScanBlockHeight && ((loop_timestamp - current_timestamp > UPDATE_SCANNED_HEIGHT_INTERVAL) || searched_blk_no == CurrentBlockchainStatus::current_height))
             {
                 // update scanned_block_height every given interval
                 // or when we reached top of the blockchain
@@ -508,12 +508,12 @@ void TxSearch::search()
                 updated_acc.scanned_block_height = searched_blk_no;
                 updated_acc.scanned_block_timestamp = *blk_timestamp_mysql_format;
 
-                // if (xmr_accounts->update(*acc, updated_acc))
-                // {
-                //     // iff success, set acc to updated_acc;
-                //     cout << "scanned_block_height updated" << endl;
-                //     *acc = updated_acc;
-                // }
+                if (xmr_accounts->update(*acc, updated_acc))
+                {
+                    // iff success, set acc to updated_acc;
+                    cout << "scanned_block_height updated" << endl;
+                    *acc = updated_acc;
+                }
 
                 current_timestamp = loop_timestamp;
             }
@@ -558,7 +558,7 @@ void TxSearch::stop()
 
 TxSearch::~TxSearch()
 {
-   // cout << std::this_thread::get_id() << endl;
+    // cout << std::this_thread::get_id() << endl;
     cout << "TxSearch destroyed" << endl;
 }
 
@@ -567,6 +567,10 @@ void TxSearch::set_searched_blk_no(uint64_t new_value)
     searched_blk_no = new_value;
 }
 
+void TxSearch::set_updateScanBlockHeight(bool update)
+{
+    updateScanBlockHeight = update;
+}
 uint64_t
 TxSearch::get_searched_blk_no() const
 {

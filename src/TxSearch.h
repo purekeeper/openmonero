@@ -29,7 +29,7 @@ class TxSearchException : public std::runtime_error
 class TxSearch
 {
     // how frequently update scanned_block_height in Accounts table
-    static constexpr uint64_t UPDATE_SCANNED_HEIGHT_INTERVAL = 5; // seconds
+    static constexpr uint64_t UPDATE_SCANNED_HEIGHT_INTERVAL = 10; // seconds
 
     // how long should the search thread be live after no request
     // are coming from the frontend. For example, when a user finishes
@@ -43,6 +43,8 @@ class TxSearch
     uint64_t last_ping_timestamp;
 
     atomic<uint64_t> searched_blk_no;
+
+    bool updateScanBlockHeight;
 
     // represents a row in mysql's Accounts table
     shared_ptr<XmrAccount> acc;
